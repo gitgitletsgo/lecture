@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>LEAD → AI × WORK · 교육 영상</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  #p{position:fixed;inset:0;width:100%;height:100%}
+  .msg{position:fixed;inset:0;display:grid;place-items:center;color:#bbb;font:16px/1.6 'Malgun Gothic',sans-serif;text-align:center}
+</style>
+</head>
+<body>
+<div id="p"></div>
+<script>
+/* 교안(HTML 파일)에서 영상 버튼을 누르면 이 페이지가 열립니다.
+   주소 예: watch.html?v=grwJ8EmAkF8
+   - 영상만 창에 꽉 차게 재생하고, 자막은 끈 상태로 시작합니다(처음 30초 동안 반복해서 끔).
+   - 이 페이지가 https 주소에 있어야 유튜브가 '오류 153' 없이 재생합니다. */
+var id = new URLSearchParams(location.search).get('v') || '';
+if (!/^[A-Za-z0-9_-]{11}$/.test(id)) {
+  document.body.innerHTML = '<div class="msg">영상 주소가 올바르지 않습니다.</div>';
+} else {
+  var p;
+  window.onYouTubeIframeAPIReady = function () {
+    p = new YT.Player('p', {
+      width: '100%', height: '100%', videoId: id,
+      playerVars: { autoplay: 1, cc_load_policy: 0, rel: 0, playsinline: 1, iv_load_policy: 3, modestbranding: 1 },
+      events: {
+        onReady: function (e) { off(); e.target.playVideo(); keep(); },
+        onApiChange: off,
+        onStateChange: function (e) { if (e.data === 1 || e.data === 3) off(); }
+      }
+    });
+  };
+  function off() { try { p.setOption('captions', 'track', {}); p.setOption('cc', 'track', {}); p.unloadModule('captions'); p.unloadModule('cc'); } catch (x) {} }
+  function keep() { var n = 0, t = setInterval(function () { off(); if (++n >= 60) clearInterval(t); }, 500); }
+  var s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(s);
+}
+</script>
+</body>
+</html>
